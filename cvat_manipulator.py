@@ -1,3 +1,4 @@
+import copy
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -14,6 +15,21 @@ class Point:
     def get_position(self):
         return [self.x,self.y]
 
+def replace_submatrix(mat, ind1, ind2, surroundings=8):
+    ind1 = round(ind1)
+    ind2 = round(ind2)
+
+    try:
+        mat[ind1-surroundings:ind1+surroundings,ind2-surroundings:ind2+surroundings] = 1
+    except:
+        #TODO not good solution
+        for i in range(surroundings):
+            try:
+                mat[ind1 - surroundings-i:ind1 + surroundings-i, ind2 - surroundings:ind2 + surroundings-i] = 1
+            except:
+                _=1
+    return mat
+
 class Cvat_manipulator:
     #todo fix auto size
     def __init__(self,xml_path,photo_dir,size = (1366,768),img_extension = ".PNG"):
@@ -24,9 +40,12 @@ class Cvat_manipulator:
         self.img_extension = img_extension
         self.size = size
         self.index = 0
+
+
     def __iter__(self):
         self.index = 0
         return self
+
     def __next__(self):
         if self.index < len(self.photo)-1:
             self.index +=1
@@ -34,9 +53,20 @@ class Cvat_manipulator:
         else:
             raise StopIteration
 
+    def split(self,val):
+        training = self.photo[:int(len(self.photo) * (1-val))]
+        validation = self.photo[-int(len(self.photo) * val):]
+
+        train_split = copy.deepcopy(self)
+        val_split = copy.deepcopy(self)
+        train_split.photo = training
+        val_split.photo = validation
+        return train_split,val_split
+
     def get_lenght(self):
         left = len(self.photo)-self.index
         return left
+
     def load_xml(self):
         try:
             self.xml = ET.parse(self.xml_path)
@@ -52,6 +82,7 @@ class Cvat_manipulator:
         if (idx == None):
             idx = self.index
         img = Image.open(Path(self.photo_dir,self.photo[idx].attrib['name']+self.img_extension))
+        img = img.resize(self.size)
         img_npy = np.array(img)
         #img_npy = img_npy[:,:,::-1]
         return img,img_npy
@@ -64,6 +95,8 @@ class Cvat_manipulator:
         height = int(i.attrib['height'])
         Rx = self.size[0] / width
         Ry = self.size[1] / height
+
+
         #todo need to done more universali
         point_needle_holder = None
         point_scissors = None
@@ -91,7 +124,7 @@ class Cvat_manipulator:
             "tweezers":point_tweezers
             }
 
-    def get_mask(self,idx = None):
+    def get_mask(self,idx = None,surroundings = 8):
         if (idx == None):
             idx = self.index
         i = self.photo[idx]
@@ -105,40 +138,29 @@ class Cvat_manipulator:
                 needle_holder_point = img.attrib['points']
                 point = [float(k) for k in needle_holder_point.split(',')]
                 point = [Rx * point[0], Ry * point[1]]
-                round_up = [math.ceil(num) for num in point]
-                round_down = [math.floor(num) for num in point]
-                mask[round_up[0], round_up[1]] = 1
-                mask[round_up[0], round_down[1]] = 1
-                mask[round_down[0], round_up[1]] = 1
-                mask[round_down[0], round_down[1]] = 1
+                mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
+
+
+
 
             if img.attrib['label'] == "scissors":
                 scissors_point = img.attrib['points']
                 point = [float(k) for k in scissors_point.split(',')]
                 point = [Rx * point[0], Ry * point[1]]
-                round_up = [math.ceil(num) for num in point]
-                round_down = [math.floor(num) for num in point]
-                mask[round_up[0], round_up[1]] = 2
-                mask[round_up[0], round_down[1]] = 2
-                mask[round_down[0], round_up[1]] = 2
-                mask[round_down[0], round_down[1]] = 2
+                mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
 
             if img.attrib['label'] == "tweezers":
                 tweezers = img.attrib['points']
                 point = [float(k) for k in tweezers.split(',')]
                 point = [Rx * point[0], Ry * point[1]]
-                round_up = [math.ceil(num) for num in point]
-                round_down = [math.floor(num) for num in point]
-                mask[round_up[0], round_up[1]] = 3
-                mask[round_up[0], round_down[1]] = 3
-                mask[round_down[0], round_up[1]] = 3
-                mask[round_down[0], round_down[1]] = 3
+                mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
         return mask.transpose()
 
 if __name__ == '__main__':
-    obj = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml","data/dataset_1/segmentation_dataset/images")
-    iterator = iter(obj)
-    elem = next(iterator)
-    print(elem.get_point())
+    obj = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml","data/dataset_1/segmentation_dataset/images",
+                           size=(24,24))
+
+    plt.plot(obj.get_mask(15))
+
     plt.show()
     print("done")
