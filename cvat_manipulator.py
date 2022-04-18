@@ -1,6 +1,7 @@
 import copy
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from random import random
 
 import numpy as np
 from PIL import Image
@@ -40,6 +41,7 @@ class Cvat_manipulator:
         self.img_extension = img_extension
         self.size = size
         self.index = 0
+        self.shuffle()
 
 
     def __iter__(self):
@@ -123,8 +125,10 @@ class Cvat_manipulator:
             "scissors":point_scissors,
             "tweezers":point_tweezers
             }
+    def shuffle(self):
+        np.random.shuffle(self.photo)
 
-    def get_mask(self,idx = None,surroundings = 8):
+    def get_mask(self,idx = None,surroundings = 5):
         if (idx == None):
             idx = self.index
         i = self.photo[idx]
@@ -140,27 +144,26 @@ class Cvat_manipulator:
                 point = [Rx * point[0], Ry * point[1]]
                 mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
 
-
-
-
             if img.attrib['label'] == "scissors":
                 scissors_point = img.attrib['points']
                 point = [float(k) for k in scissors_point.split(',')]
                 point = [Rx * point[0], Ry * point[1]]
-                mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
+               # mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
 
             if img.attrib['label'] == "tweezers":
                 tweezers = img.attrib['points']
                 point = [float(k) for k in tweezers.split(',')]
                 point = [Rx * point[0], Ry * point[1]]
-                mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
+                #mask = replace_submatrix(mask,point[0],point[1],surroundings=surroundings)
         return mask.transpose()
 
 if __name__ == '__main__':
     obj = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml","data/dataset_1/segmentation_dataset/images",
-                           size=(24,24))
+                           size=(512,512))
 
-    plt.plot(obj.get_mask(15))
-
+    mask = obj.get_mask(500)
+    _,np_img = obj.get_img(500)
+    plt.imshow(mask, interpolation='nearest')
+    plt.imshow(np_img, interpolation='nearest',alpha=0.7)
     plt.show()
     print("done")
