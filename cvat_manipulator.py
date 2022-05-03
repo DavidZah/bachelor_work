@@ -128,7 +128,7 @@ class Cvat_manipulator:
     def shuffle(self):
         np.random.shuffle(self.photo)
 
-    def get_mask(self,idx = None,surroundings = 5):
+    def get_mask(self,idx = None,surroundings = 6):
         if (idx == None):
             idx = self.index
         i = self.photo[idx]

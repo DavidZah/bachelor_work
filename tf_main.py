@@ -19,11 +19,13 @@ import numpy as np
 import tensorflow as tf
 from cvat_manipulator import Cvat_manipulator
 
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 input_dir = "data/dataset_1/segmentation_dataset/images"
 target_dir = "masks/"
 sm.set_framework('tf.keras')
 img_size = (512, 512)
-batch_size = 5
+batch_size = 8
 
 i = 2
 
@@ -78,9 +80,9 @@ val_gen = DataLoader(
 
 # define model
 model = Unet(BACKBONE, input_shape=(512, 512, 3), encoder_weights='imagenet', classes=2)
-model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=[iou_score])
+model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=["accuracy",iou_score])
 
-checkpoint_filepath = '/data/checkpoint'
+checkpoint_filepath = '/data/checkpoint/'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     verbose=True,
     filepath=checkpoint_filepath,
@@ -111,9 +113,9 @@ class DisplayCallback(tf.keras.callbacks.Callback):
 
 
 # fit model
-history = model.fit(train_gen,validation_data=val_gen,callbacks=[model_checkpoint_callback, DisplayCallback()], epochs=10)
+history = model.fit(train_gen,validation_data=val_gen,callbacks=[model_checkpoint_callback, DisplayCallback()], epochs=2)
 
-model.save('data/model/')
+model.save_weights('data/modelV2/')
 
 print(history.history.keys())
 # summarize history for accuracy

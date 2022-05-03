@@ -32,7 +32,7 @@ if __name__ == '__main__':
             elem = next(iterator)
         point = elem.get_point()
         point = point["needle_holder"]
-        surroundigs = 20
+        surroundigs = 10
         img,np_img = elem.get_img()
         cv2.imshow('Tracking', np_img)
         bbox = point_to_box(point,surroundigs)
@@ -49,6 +49,7 @@ if __name__ == '__main__':
                 if point != None:
 
                     img,np_img = elem.get_img()
+                    np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
                     ok, bbox = tracker.update(np_img)
                     (x, y, w, h) = [int(v) for v in bbox]
 
@@ -65,13 +66,14 @@ if __name__ == '__main__':
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     cv2.putText(np_img,str(int(dst)), (10, 450), font, 3, (0, 255, 0), 2, cv2.LINE_AA)
 
-                    cv2.imshow('Tracking', np_img)
+                    #cv2.imshow('Tracking', np_img)
 
-                    key = cv2.waitKey(30)
+                    #key = cv2.waitKey(0)
             except StopIteration:
                 break
         plt.plot(lst_dst)
         plt.title(str(surroundigs))
+        plt.savefig(f"fig_{str(surroundigs)}.pdf")
         plt.show()
         with open(f"{str(surroundigs)}.txt", "w") as output:
             output.write(str(lst_dst))
