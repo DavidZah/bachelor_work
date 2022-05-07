@@ -27,12 +27,13 @@ if __name__ == '__main__':
         lst_dst = []
         obj = Cvat_manipulator("C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset\\annotations.xml","C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset\\images")
         tracker = cv2.TrackerMIL_create()
+        #tracker = cv2.TrackerKCF_create()
         iterator = iter(obj)
         for i in range(0,500):
             elem = next(iterator)
         point = elem.get_point()
         point = point["needle_holder"]
-        surroundigs = 10
+        surroundigs = 50
         img,np_img = elem.get_img()
         cv2.imshow('Tracking', np_img)
         bbox = point_to_box(point,surroundigs)
@@ -66,9 +67,9 @@ if __name__ == '__main__':
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     cv2.putText(np_img,str(int(dst)), (10, 450), font, 3, (0, 255, 0), 2, cv2.LINE_AA)
 
-                    #cv2.imshow('Tracking', np_img)
+                    cv2.imshow('Tracking', np_img)
 
-                    #key = cv2.waitKey(0)
+                    key = cv2.waitKey(10)
             except StopIteration:
                 break
         plt.plot(lst_dst)

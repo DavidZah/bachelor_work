@@ -18,7 +18,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from cvat_manipulator import Cvat_manipulator
-
+import pydot
 #os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 input_dir = "data/dataset_1/segmentation_dataset/images"
@@ -66,7 +66,7 @@ preprocess_input = get_preprocessing(BACKBONE)
 
 cvat = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml",
                         "data/dataset_1/segmentation_dataset/images"
-                        , img_size)
+                        , img_size,shuffle=True)
 
 cvat_train, cvat_val = cvat.split(0.01)
 
@@ -81,7 +81,8 @@ val_gen = DataLoader(
 # define model
 model = Unet(BACKBONE, input_shape=(512, 512, 3), encoder_weights='imagenet', classes=2)
 model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=["accuracy",iou_score])
-
+tf.keras.utils.plot_model(model, to_file='model.pdf',dpi=600,
+                          expand_nested=True, show_shapes=True)
 checkpoint_filepath = '/data/checkpoint/'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     verbose=True,
@@ -112,8 +113,10 @@ class DisplayCallback(tf.keras.callbacks.Callback):
         display_mask()
 
 
+
+
 # fit model
-history = model.fit(train_gen,validation_data=val_gen,callbacks=[model_checkpoint_callback, DisplayCallback()], epochs=2)
+history = model.fit(train_gen,validation_data=val_gen,callbacks=[model_checkpoint_callback, DisplayCallback()], epochs=3)
 
 model.save_weights('data/modelV2/')
 

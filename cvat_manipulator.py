@@ -33,7 +33,7 @@ def replace_submatrix(mat, ind1, ind2, surroundings=8):
 
 class Cvat_manipulator:
     #todo fix auto size
-    def __init__(self,xml_path,photo_dir,size = (1366,768),img_extension = ".PNG"):
+    def __init__(self,xml_path,photo_dir,size = (1366,768),img_extension = ".PNG",shuffle = False):
         self.xml_path = xml_path
         self.photo_dir = photo_dir
         self.photo = []
@@ -41,7 +41,8 @@ class Cvat_manipulator:
         self.img_extension = img_extension
         self.size = size
         self.index = 0
-        self.shuffle()
+        if shuffle:
+            self.shuffle()
 
 
     def __iter__(self):
