@@ -1,33 +1,25 @@
-import pickle
 import random
-import xml.etree.ElementTree as ET
-import math
 import segmentation_models as sm
-import tf as tf
+import matplotlib.pyplot as plt
+import PIL
 from segmentation_models import Unet
 from segmentation_models import get_preprocessing
-from segmentation_models.losses import bce_jaccard_loss
 from segmentation_models.metrics import iou_score
-import PIL
 from PIL import ImageOps
-import matplotlib.pyplot as plt
 from tensorflow import keras
-
-from tensorflow.keras.preprocessing.image import load_img
-import os
 import numpy as np
 import tensorflow as tf
 from cvat_manipulator import Cvat_manipulator
-import pydot
-#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 input_dir = "data/dataset_1/segmentation_dataset/images"
 target_dir = "masks/"
 sm.set_framework('tf.keras')
-img_size = (512, 512)
-batch_size = 8
-
-i = 2
+img_size = (1024, 1024)
+batch_size = 2
+epochs = 2
+i = 4
 
 
 class DataLoader(keras.utils.Sequence):
@@ -66,7 +58,14 @@ preprocess_input = get_preprocessing(BACKBONE)
 
 cvat = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml",
                         "data/dataset_1/segmentation_dataset/images"
-                        , img_size,shuffle=True)
+                        , img_size, shuffle=True)
+
+cvat.add_dataset(
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\images")
+cvat.add_dataset(
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_3\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_3\\images", shuffle=True)
 
 cvat_train, cvat_val = cvat.split(0.01)
 
@@ -79,9 +78,9 @@ val_gen = DataLoader(
 )
 
 # define model
-model = Unet(BACKBONE, input_shape=(512, 512, 3), encoder_weights='imagenet', classes=2)
-model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=["accuracy",iou_score])
-tf.keras.utils.plot_model(model, to_file='model.pdf',dpi=600,
+model = Unet(BACKBONE, input_shape=(img_size[0], img_size[1], 3), encoder_weights='imagenet', classes=2)
+model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=["accuracy", iou_score])
+tf.keras.utils.plot_model(model, to_file='model.pdf', dpi=600,
                           expand_nested=True, show_shapes=True)
 checkpoint_filepath = '/data/checkpoint/'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -95,7 +94,7 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 
 def display_mask():
-    i = random.randint(0, 30)
+    i = random.randint(0, val_gen.cvat_manipulator.get_lenght() - 1)
     val_preds = model.predict(val_gen)
     """Quick utility to display a model's prediction."""
     mask = np.argmax(val_preds[i], axis=-1)
@@ -111,14 +110,14 @@ def display_mask():
 class DisplayCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         display_mask()
-
-
+        print("epoch")
 
 
 # fit model
-history = model.fit(train_gen,validation_data=val_gen,callbacks=[model_checkpoint_callback, DisplayCallback()], epochs=3)
+history = model.fit(train_gen, validation_data=val_gen, callbacks=[model_checkpoint_callback, DisplayCallback()],
+                    epochs=epochs)
 
-model.save_weights('data/modelV2/')
+model.save_weights('data/weightsfile.h5')
 
 print(history.history.keys())
 # summarize history for accuracy
@@ -137,5 +136,3 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
-
-display_mask(i)
