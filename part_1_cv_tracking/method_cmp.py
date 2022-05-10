@@ -54,8 +54,6 @@ if __name__ == '__main__':
                     ok, bbox = tracker.update(np_img)
                     (x, y, w, h) = [int(v) for v in bbox]
 
-
-
                     #visualiation part
                     cv2.circle(np_img, (int(point[0]), int(point[1])), radius=1, color=(0, 0, 255), thickness=-1)
                     cv2.rectangle(np_img, (x, y), (x + w, y + h), (0, 255, 0), 2, 1)
