@@ -1,4 +1,3 @@
-import argparse
 import math
 
 import segmentation_models as sm
@@ -14,6 +13,8 @@ import cv2
 import numpy as np  # linear algebra
 import matplotlib.pyplot as plt
 from skimage.measure import label, regionprops
+from tqdm import tqdm
+
 from kalman_filter import KalmanFilter
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
@@ -26,7 +27,7 @@ def load_model(path='data/weightsfile.h5'):
     preprocess_input = get_preprocessing(BACKBONE)
     model = Unet(BACKBONE, input_shape=(img_size[0], img_size[1], 3), encoder_weights='imagenet', classes=2)
     model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=[iou_score])
-    model.load_weights(path)
+    model.load_weights('data/weightsfile.h5')
     return model
 
 
@@ -54,17 +55,26 @@ def predict(frame, model, plot=False):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-
     buffer = 128
     model = load_model()
     VideoCap = cv2.VideoCapture('data\\video_test_3.mov')
+    length = int(VideoCap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     HiSpeed = 100
     ControlSpeedVar = 30  # Lowest: 1 - Highest:100
     debugMode = 1
 
+    points_lst = []
+    for i in tqdm(range(length)):
+        try:
+            ret, frame = VideoCap.read()
+            frame = cv2.resize(frame, img_size)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            points_lst.append(predict(frame,model))
+        except:
+            break
 
+    print("bleh")
     while (True):
         # Read frame
         ret, frame = VideoCap.read()

@@ -139,7 +139,7 @@ class Cvat_manipulator:
     def shuffle(self):
         np.random.shuffle(self.photo)
 
-    def get_mask(self, idx=None, surroundings=5):
+    def get_mask(self, idx=None, surroundings=20):
         if (idx == None):
             idx = self.index
         i = self.photo[idx]
@@ -172,7 +172,7 @@ class Cvat_manipulator:
 if __name__ == '__main__':
     obj = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml",
                            "data/dataset_1/segmentation_dataset/images",
-                           size=(512, 512))
+                           size=(1024, 1024))
     obj.add_dataset(
         "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\annotations.xml",
         "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\images")

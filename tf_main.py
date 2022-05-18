@@ -17,7 +17,7 @@ input_dir = "data/dataset_1/segmentation_dataset/images"
 target_dir = "masks/"
 sm.set_framework('tf.keras')
 img_size = (1024, 1024)
-batch_size = 2
+batch_size = 1
 epochs = 2
 i = 4
 
@@ -61,13 +61,23 @@ cvat = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml",
                         , img_size, shuffle=True)
 
 cvat.add_dataset(
-    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\annotations.xml",
-    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\images")
-cvat.add_dataset(
     "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_3\\annotations.xml",
     "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_3\\images", shuffle=True)
+cvat.add_dataset(
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_4\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_4\\images", shuffle=True)
+cvat.add_dataset(
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_5\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_5\\images", shuffle=True)
+cvat.add_dataset(
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_6\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_6\\images", shuffle=True)
+cvat.add_dataset(
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_7\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_7\\images", shuffle=True
+)
 
-cvat_train, cvat_val = cvat.split(0.01)
+cvat_train, cvat_val = cvat.split(0.005)
 
 train_gen = DataLoader(
     batch_size, img_size, cvat_train
@@ -82,7 +92,7 @@ model = Unet(BACKBONE, input_shape=(img_size[0], img_size[1], 3), encoder_weight
 model.compile('Adam', loss="sparse_categorical_crossentropy", metrics=["accuracy", iou_score])
 tf.keras.utils.plot_model(model, to_file='model.pdf', dpi=600,
                           expand_nested=True, show_shapes=True)
-checkpoint_filepath = '/data/checkpoint/'
+checkpoint_filepath = '/data/checkpoint/model.h5'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     verbose=True,
     filepath=checkpoint_filepath,
@@ -117,7 +127,7 @@ class DisplayCallback(tf.keras.callbacks.Callback):
 history = model.fit(train_gen, validation_data=val_gen, callbacks=[model_checkpoint_callback, DisplayCallback()],
                     epochs=epochs)
 
-model.save_weights('data/weightsfile.h5')
+model.save_weights(f'data/weightsfile{str(img_size)}_{BACKBONE}_batch_{batch_size}.h5')
 
 print(history.history.keys())
 # summarize history for accuracy

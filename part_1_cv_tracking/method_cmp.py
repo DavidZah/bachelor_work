@@ -24,55 +24,64 @@ def point_to_box(point,size = 10):
 
 if __name__ == '__main__':
 
-        lst_dst = []
-        obj = Cvat_manipulator("C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset\\annotations.xml","C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset\\images")
-        tracker = cv2.TrackerMIL_create()
-        #tracker = cv2.TrackerKCF_create()
-        iterator = iter(obj)
-        for i in range(0,500):
+        for j in range(25,30,5):
+            lst_dst = []
+            obj = Cvat_manipulator(
+                "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\annotations.xml",
+                "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\images",
+                )
+            tracker = cv2.TrackerMIL_create()
+            #tracker = cv2.TrackerKCF_create()
+            iterator = iter(obj)
+
             elem = next(iterator)
-        point = elem.get_point()
-        point = point["needle_holder"]
-        surroundigs = 50
-        img,np_img = elem.get_img()
-        cv2.imshow('Tracking', np_img)
-        bbox = point_to_box(point,surroundigs)
-        #visual_bbox = cv2.selectROI(np_img)
-        #ok = tracker.init(np_img, (400,40,425,425))
-        ok = tracker.init(np_img, bbox)
-        lenght = elem.get_lenght()
-        for i in tqdm(range(lenght)):
-            try:
-                # Get next element from TeamIterator object using iterator object
-                elem = next(iterator)
-                point = elem.get_point()
-                point = point["needle_holder"]
-                if point != None:
 
-                    img,np_img = elem.get_img()
-                    np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
-                    ok, bbox = tracker.update(np_img)
-                    (x, y, w, h) = [int(v) for v in bbox]
+            point = elem.get_point()
+            point = point["needle_holder"]
+            surroundigs = j
+            img, np_img = elem.get_img()
+            cv2.imshow('Tracking', np_img)
+            bbox = point_to_box(point, surroundigs)
+            # visual_bbox = cv2.selectROI(np_img)
+            # ok = tracker.init(np_img, (400,40,425,425))
+            ok = tracker.init(np_img, bbox)
+            lenght = elem.get_lenght()
+            for i in tqdm(range(lenght)):
+                try:
+                    # Get next element from TeamIterator object using iterator object
+                    elem = next(iterator)
+                    point = elem.get_point()
+                    point = point["needle_holder"]
+                    if point != None:
 
-                    #visualiation part
-                    cv2.circle(np_img, (int(point[0]), int(point[1])), radius=1, color=(0, 0, 255), thickness=-1)
-                    cv2.rectangle(np_img, (x, y), (x + w, y + h), (0, 255, 0), 2, 1)
+                        img,np_img = elem.get_img()
+                        np_img = cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
+                        ok, bbox = tracker.update(np_img)
+                        (x, y, w, h) = [int(v) for v in bbox]
 
-                    bbox_point = box_to_point(bbox)
-                    dst = calc_euklid_distance(bbox_point,point)
-                    lst_dst.append(dst)
+                        #visualiation part
+                        cv2.circle(np_img, (int(point[0]), int(point[1])), radius=5, color=(0, 0, 255), thickness=-1)
+                        cv2.rectangle(np_img, (x, y), (x + w, y + h), (0, 255, 0), 2, 1)
 
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    cv2.putText(np_img,str(int(dst)), (10, 450), font, 3, (0, 255, 0), 2, cv2.LINE_AA)
+                        bbox_point = box_to_point(bbox)
+                        dst = calc_euklid_distance(bbox_point,point)
+                        lst_dst.append(dst)
 
-                    cv2.imshow('Tracking', np_img)
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        cv2.putText(np_img,str(int(dst)), (10, 450), font, 3, (0, 255, 0), 2, cv2.LINE_AA)
 
-                    key = cv2.waitKey(10)
-            except StopIteration:
-                break
-        plt.plot(lst_dst)
-        plt.title(str(surroundigs))
-        plt.savefig(f"fig_{str(surroundigs)}.pdf")
+                        cv2.imshow('Tracking', np_img)
+
+                        key = cv2.waitKey(0)
+                except StopIteration:
+                    break
+
+            plt.plot(lst_dst,label=f"Velikost okolí {str(surroundigs)}")
+        plt.title(f"Euklidovská vzdálenost od nástroje")
+        plt.ylabel("Chyba")
+        plt.xlabel("Snímek")
+        plt.legend()
+        plt.savefig(f"MIL_fig_{str(surroundigs)}.pdf")
         plt.show()
         with open(f"{str(surroundigs)}.txt", "w") as output:
             output.write(str(lst_dst))
