@@ -16,10 +16,9 @@ from skimage.measure import label, regionprops
 from tqdm import tqdm
 
 from cvat_manipulator import Cvat_manipulator
-from kalman_filter import KalmanFilter
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-img_size = (1024, 1024)
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+img_size = (512, 512)
 
 
 def calc_euklid_distance(point_x, point_y):
@@ -27,7 +26,7 @@ def calc_euklid_distance(point_x, point_y):
     return dist
 
 
-def load_model(path='data/weightsfile(1024, 1024)_resnet34_batch_1.h5'):
+def load_model(path='data/weightsfile(512, 512)_resnet34_batch_8.h5'):
     sm.set_framework('tf.keras')
     BACKBONE = 'resnet34'
     preprocess_input = get_preprocessing(BACKBONE)
@@ -118,5 +117,5 @@ if __name__ == '__main__':
     plt.ylabel("Chyba")
     plt.xlabel("Snímek")
     plt.legend()
-    plt.savefig(f"plot_dir/1024_1024_resnet.pdf")
+    plt.savefig(f"plot_dir/512_512__b8_resnet34.pdf")
     plt.show()

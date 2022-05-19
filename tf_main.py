@@ -16,8 +16,8 @@ from cvat_manipulator import Cvat_manipulator
 input_dir = "data/dataset_1/segmentation_dataset/images"
 target_dir = "masks/"
 sm.set_framework('tf.keras')
-img_size = (1024, 1024)
-batch_size = 1
+img_size = (512, 512)
+batch_size = 8
 epochs = 2
 i = 4
 
