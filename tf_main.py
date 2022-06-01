@@ -20,7 +20,7 @@ img_size = (512, 512)
 batch_size = 8
 epochs = 2
 i = 4
-
+BACKBONE = 'resnet34'
 
 class DataLoader(keras.utils.Sequence):
     """Helper to iterate over the data (as Numpy arrays)."""
@@ -53,7 +53,7 @@ class DataLoader(keras.utils.Sequence):
         return x, y
 
 
-BACKBONE = 'resnet34'
+
 preprocess_input = get_preprocessing(BACKBONE)
 
 cvat = Cvat_manipulator("data/dataset_1/segmentation_dataset/annotations.xml",
@@ -127,7 +127,7 @@ class DisplayCallback(tf.keras.callbacks.Callback):
 history = model.fit(train_gen, validation_data=val_gen, callbacks=[model_checkpoint_callback, DisplayCallback()],
                     epochs=epochs)
 
-model.save_weights(f'data/weightsfile{str(img_size)}_{BACKBONE}_batch_{batch_size}.h5')
+model.save_weights(f'data/weightsfile_{str(img_size)}_{BACKBONE}_batch_{batch_size}.h5')
 
 print(history.history.keys())
 # summarize history for accuracy
