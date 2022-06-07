@@ -1,24 +1,23 @@
 import math
 
+import PIL
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np  # linear algebra
 import segmentation_models as sm
+from PIL import ImageOps
+from scipy.ndimage.measurements import label
 from segmentation_models import Unet
 from segmentation_models import get_preprocessing
 from segmentation_models.metrics import iou_score
-import PIL
-from PIL import ImageOps
-from tensorflow import keras
-from scipy.ndimage.measurements import label
-import os
-import cv2
-import numpy as np  # linear algebra
-import matplotlib.pyplot as plt
 from skimage.measure import label, regionprops
+from tensorflow import keras
 from tqdm import tqdm
 
 from cvat_manipulator import Cvat_manipulator
 
 #os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-img_size = (512, 512)
+img_size = (1024, 1024)
 
 
 def calc_euklid_distance(point_x, point_y):
@@ -82,11 +81,11 @@ def plot_trajectory(lst):
 
     plt.show()
 if __name__ == '__main__':
-    model = load_model("data/weightsfile_(512, 512)_resnet34_batch_8.h5")
+    model = load_model("data/weightsfile_(1024, 1024)_resnet34_batch_10.h5")
 
     obj = Cvat_manipulator(
-        "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\annotations.xml",
-    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset_2\\images",size=img_size)
+        "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset\\annotations.xml",
+    "C:\\Users\\David\\PycharmProjects\\bakalarka\\data\\dataset_1\\segmentation_dataset\\images",size=img_size)
 
     iterator = iter(obj)
     elem = next(iterator)
