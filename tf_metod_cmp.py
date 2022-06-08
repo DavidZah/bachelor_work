@@ -90,7 +90,7 @@ if __name__ == '__main__':
     iterator = iter(obj)
     elem = next(iterator)
 
-    for i in range(0):
+    for i in range(400):
         elem = next(iterator)
     lenght = elem.get_lenght()
 
